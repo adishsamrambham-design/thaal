@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Start local Supabase (database, auth, storage)
+        run: pnpm exec supabase start -x vector,logflare,edge-runtime,imgproxy,studio,mailpit,realtime,postgres-meta,supavisor
+
+      # Local-only keys printed by the Supabase CLI. These are public test defaults, not real secrets.
+      - name: Write local environment file
+        run: |
+          eval "$(pnpm exec supabase status -o env | sed 's/^/export SB_/')"
+          {
+            echo "NEXT_PUBLIC_SITE_URL=http://localhost:3000"
+            echo "NEXT_PUBLIC_SUPABASE_URL=$SB_API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$SB_PUBLISHABLE_KEY"
+            echo "SUPABASE_SECRET_KEY=$SB_SECRET_KEY"
+          } > .env.local
+
+      - name: Type check
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Formatting
+        run: pnpm format:check
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Database tests (Row Level Security)
+        run: pnpm db:test
+
+      - name: Build
+        run: pnpm build
+
+      - name: No secrets in browser bundles
+        run: pnpm check:bundle-secrets
+
+      - name: Install browser for end-to-end tests
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        run: pnpm test:e2e
+        env:
+          CI: true
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: test-results/
+          retention-days: 7
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan history for committed secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

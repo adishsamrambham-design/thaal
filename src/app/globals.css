@@ -1,0 +1,163 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Thaal design tokens. See docs/design-direction.md.
+ * Two modes share one palette: "loud" (marketing, discovery) and "quiet" (writing, reading).
+ */
+
+@theme inline {
+  --font-sans:
+    var(--font-anek-latin), var(--font-anek-malayalam), var(--font-anek-devanagari), var(--font-anek-tamil),
+    var(--font-anek-telugu), var(--font-anek-kannada), var(--font-anek-bangla), system-ui, sans-serif;
+  --font-heading: var(--font-sans);
+  --font-serif: var(--font-noto-serif), var(--font-noto-serif-malayalam), Georgia, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Brand colours (use these names in components) */
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-lime: var(--lime);
+  --color-mist: var(--mist);
+  --color-stone: var(--stone);
+
+  /* shadcn semantic tokens */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+}
+
+:root {
+  --ink: #000000;
+  --paper: #ffffff;
+  --lime: #d7f34a;
+  --mist: #edede8;
+  --stone: #66645d;
+
+  --background: var(--paper);
+  --foreground: #141412;
+  --card: var(--paper);
+  --card-foreground: #141412;
+  --popover: var(--paper);
+  --popover-foreground: #141412;
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --secondary: var(--mist);
+  --secondary-foreground: #141412;
+  --muted: var(--mist);
+  --muted-foreground: var(--stone);
+  --accent: var(--lime);
+  --accent-foreground: var(--ink);
+  --destructive: #c4321b;
+  --border: #dddcd5;
+  --input: #cfcec6;
+  --ring: #141412;
+  --radius: 0.3rem;
+
+  /* Reading comfort: Indic scripts need taller lines than Latin. */
+  --leading-read: 1.65;
+}
+
+:lang(ml),
+:lang(hi),
+:lang(ta),
+:lang(te),
+:lang(kn),
+:lang(bn) {
+  --leading-read: 1.85;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #151514;
+    --mist: #24241f;
+    --stone: #a3a197;
+    --background: var(--paper);
+    --foreground: #eeede7;
+    --card: #1c1c1a;
+    --card-foreground: #eeede7;
+    --popover: #1c1c1a;
+    --popover-foreground: #eeede7;
+    --primary: #eeede7;
+    --primary-foreground: #151514;
+    --secondary: var(--mist);
+    --secondary-foreground: #eeede7;
+    --muted: var(--mist);
+    --muted-foreground: var(--stone);
+    --border: #33332e;
+    --input: #3d3d37;
+    --ring: #eeede7;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* The loud display voice: condensed, heavy, tight. Uppercase is reserved for this. */
+  .display {
+    font-family: var(--font-sans);
+    font-stretch: 75%;
+    font-weight: 800;
+    line-height: 0.88;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+  .display:lang(ml) {
+    /* Malayalam has no case and tall conjuncts — give it room. */
+    line-height: 1.12;
+    text-transform: none;
+  }
+  .prose-read {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+    line-height: var(--leading-read);
+    max-width: 38rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
