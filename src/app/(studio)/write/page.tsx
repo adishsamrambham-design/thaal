@@ -1,34 +1,65 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { Suspense } from "react";
+import { NewWorkForm } from "@/components/studio/new-work-form";
+import { requireUser } from "@/lib/auth";
+import { languageLabel, workTypeLabel } from "@/lib/writing/catalog";
+import { listMyWorks } from "@/lib/writing/data";
 
-export const metadata: Metadata = { title: "Write", robots: { index: false } };
+export const metadata: Metadata = { title: "Your writing", robots: { index: false } };
 
-/**
- * Placeholder for the editor (Phase 2). Shows the reading/writing type so it can be
- * reviewed early, in English and Malayalam.
- */
 export default function WritePage() {
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
-      <p className="text-sm text-muted-foreground">Private draft. Only you can see this.</p>
-
-      <article className="mt-8 space-y-10">
-        <section>
-          <h1 className="font-serif text-3xl font-semibold sm:text-4xl">The editor arrives in the next phase</h1>
-          <p className="prose-read mt-5">
-            This is how your writing will look while you work: a calm page, a reading typeface and nothing else on
-            screen. Sign-in, autosave and private drafts are next. Everything you write here will stay private until you
-            choose to publish it.
-          </p>
-        </section>
-
-        <section lang="ml">
-          <h2 className="font-serif text-2xl font-semibold sm:text-3xl">ഒന്നാം അദ്ധ്യായം</h2>
-          <p className="prose-read mt-5">
-            നിങ്ങൾ എഴുതുന്നതെല്ലാം പ്രസിദ്ധീകരിക്കുന്നതുവരെ നിങ്ങൾക്ക് മാത്രം കാണാവുന്നതായിരിക്കും. മലയാളം വായിക്കാൻ
-            എളുപ്പമാകുന്ന തരത്തിൽ വരികൾക്കിടയിൽ കൂടുതൽ അകലം നൽകിയിട്ടുണ്ട്.
-          </p>
-        </section>
-      </article>
+    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+      <h1 className="text-3xl font-bold sm:text-4xl">Your writing</h1>
+      <p className="mt-2 text-muted-foreground">Everything here is private. Only you can see it.</p>
+      <Suspense fallback={<p className="mt-10 text-muted-foreground">Loading your works…</p>}>
+        <Works />
+      </Suspense>
     </div>
+  );
+}
+
+async function Works() {
+  await requireUser("/write");
+  const works = await listMyWorks();
+
+  return (
+    <>
+      <section aria-labelledby="new-heading" className="mt-10 rounded-lg border border-border p-5 sm:p-6">
+        <h2 id="new-heading" className="text-lg font-semibold">
+          {works.length ? "Start something new" : "Start your first work"}
+        </h2>
+        <div className="mt-4">
+          <NewWorkForm />
+        </div>
+      </section>
+
+      {works.length > 0 && (
+        <section aria-labelledby="works-heading" className="mt-12">
+          <h2 id="works-heading" className="text-lg font-semibold">
+            Drafts
+          </h2>
+          <ul className="mt-4 divide-y divide-border border-y border-border">
+            {works.map((w) => (
+              <li key={w.id}>
+                <Link
+                  href={`/write/${w.id}`}
+                  className="flex flex-col gap-1 py-4 hover:bg-muted/50 sm:flex-row sm:items-baseline sm:justify-between sm:px-2"
+                >
+                  <span lang={w.language} className="text-lg font-semibold">
+                    {w.title}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {workTypeLabel(w.type)}, {languageLabel(w.language)}. {w.chapter_count}{" "}
+                    {w.chapter_count === 1 ? "part" : "parts"}, {w.word_count.toLocaleString("en-IN")} words
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </>
   );
 }

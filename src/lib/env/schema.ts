@@ -22,6 +22,11 @@ export const publicEnvSchema = z.object({
     .refine((v) => !v.includes("REPLACE_ME"), {
       message: "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY still has the placeholder from .env.example",
     }),
+  /** Show "Continue with Google" only once Google sign-in is configured in Supabase. */
+  NEXT_PUBLIC_GOOGLE_SIGN_IN: z.preprocess(
+    (v) => (v === undefined || v === "" ? "off" : v),
+    z.enum(["on", "off"], "NEXT_PUBLIC_GOOGLE_SIGN_IN must be on or off"),
+  ),
 });
 
 const emptyToUndefined = (v: unknown) => (v === "" ? undefined : v);

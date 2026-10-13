@@ -9,7 +9,7 @@ const valid = {
 
 describe("environment validation", () => {
   it("accepts a complete, valid environment", () => {
-    expect(parseEnv(publicEnvSchema, valid)).toEqual(valid);
+    expect(parseEnv(publicEnvSchema, valid)).toEqual({ ...valid, NEXT_PUBLIC_GOOGLE_SIGN_IN: "off" });
   });
 
   it("names the missing variable when one is absent", () => {

@@ -8,7 +8,7 @@ test("home page shows the bilingual headline and main actions", async ({ page })
 });
 
 test("no page scrolls sideways", async ({ page }) => {
-  for (const path of ["/", "/discover", "/write"]) {
+  for (const path of ["/", "/discover", "/sign-in"]) {
     await page.goto(path);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow, `horizontal overflow on ${path}`).toBeLessThanOrEqual(0);
@@ -20,7 +20,9 @@ test("navigation reaches discover and the writing studio", async ({ page }) => {
   await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Discover" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Discover");
   await page.getByRole("main").getByRole("link", { name: "Start writing" }).click();
-  await expect(page.getByText("Private draft. Only you can see this.")).toBeVisible();
+  // The studio is private, so signed-out visitors are asked to sign in first.
+  await expect(page).toHaveURL(/\/sign-in\?next=%2Fwrite$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sign in");
 });
 
 test("security headers are sent", async ({ request }) => {

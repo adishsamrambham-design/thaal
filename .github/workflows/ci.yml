@@ -30,7 +30,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Start local Supabase (database, auth, storage)
-        run: pnpm exec supabase start -x vector,logflare,edge-runtime,imgproxy,studio,mailpit,realtime,postgres-meta,supavisor
+        run: pnpm exec supabase start -x vector,logflare,edge-runtime,imgproxy,studio,realtime,postgres-meta,supavisor
 
       # Local-only keys printed by the Supabase CLI. These are public test defaults, not real secrets.
       - name: Write local environment file
@@ -57,6 +57,9 @@ jobs:
 
       - name: Database tests (Row Level Security)
         run: pnpm db:test
+
+      - name: Database types match the migrations
+        run: pnpm db:types && git diff --exit-code src/lib/supabase/database.types.ts
 
       - name: Build
         run: pnpm build

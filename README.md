@@ -2,7 +2,7 @@
 
 A self-publishing marketplace and writing studio for English and Indian languages. _(Working name.)_
 
-**Status:** Phase 1 (foundation). No accounts, writing, publishing or payments yet. See [`docs/implementation-plan.md`](docs/implementation-plan.md).
+**Status:** Phase 2 (accounts and private writing). Publishing, reading and payments are not built yet. See [`docs/implementation-plan.md`](docs/implementation-plan.md).
 
 ## What's in the box
 
@@ -22,10 +22,12 @@ You need **Node.js 22+**, **pnpm 10** and **Docker** (for the local database).
 
 ```bash
 pnpm install
-pnpm db:start                 # starts a local Supabase in Docker and prints its keys
+pnpm db:start                 # starts a local Supabase in Docker (incl. a test mailbox) and prints its keys
 cp .env.example .env.local    # then paste the local URL and publishable key from the step above
 pnpm dev                      # http://localhost:3000
 ```
+
+To sign in locally, request a code on `/sign-in` and read it from the test mailbox at http://127.0.0.1:54324. No real email is sent.
 
 The local Supabase keys are fixed public test values. They only work on your machine. **Real project keys are never written into files in this repository.** They go into the hosting dashboard.
 
@@ -40,6 +42,7 @@ The local Supabase keys are fixed public test values. They only work on your mac
 | `pnpm test:e2e` | Browser tests against a production build (run `pnpm build` first)                                                  |
 | `pnpm db:reset` | Rebuilds the local database from migrations. **Deletes local data.**                                               |
 | `pnpm format`   | Fixes code formatting                                                                                              |
+| `pnpm db:types` | Regenerates TypeScript types after a database migration                                                            |
 
 ## Git practices
 
