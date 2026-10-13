@@ -111,3 +111,22 @@ export function countWords(text: string, lang = "en"): number {
   for (const s of seg.segment(text)) if (s.isWordLike) n++;
   return n;
 }
+
+/** Stable JSON for comparing documents: object keys sorted, so storage order doesn't matter. */
+function canonical(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
+  if (value && typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .filter(([, v]) => v !== undefined)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${canonical(v)}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+/** True if two documents contain the same text and formatting, ignoring key order and stripped attributes. */
+export function sameDoc(a: unknown, b: unknown): boolean {
+  const sa = sanitizeDoc(a);
+  const sb = sanitizeDoc(b);
+  return sa !== null && sb !== null && canonical(sa) === canonical(sb);
+}

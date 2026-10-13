@@ -1,6 +1,6 @@
 # Phase 2 report: accounts and private writing
 
-**Status:** Complete in the workspace, on branch `phase-2-private-writing` (merged into `main` locally). **Not yet on GitHub.** Date: 13 October 2026.
+**Status:** Complete and pushed to GitHub (`adishsamrambham-design/thaal`, branch `main`). Date: 13 October 2026.
 
 ## What was built
 
@@ -22,7 +22,7 @@
 | Database security tests          | 35 / 35 pass, on both a clean and a used database. Breaking one rule on purpose made them fail. |
 | Production build                 | Pass                                                                                            |
 | Bundle secret scan               | Pass                                                                                            |
-| Browser tests, desktop and phone | 26 / 26 pass, **twice in a row, no retries**                                                    |
+| Browser tests, desktop and phone | 28 / 28 pass, no retries; recovery tests 40 / 40 across 10 repeats                              |
 
 The browser tests cover:
 
@@ -37,7 +37,7 @@ The browser tests cover:
 
 ## Not done or not verified
 
-- **The GitHub Actions workflow has still never run on GitHub** (no repository yet).
+- The first GitHub run found one flaky recovery test (fixed: drafts are now compared by content, and a deterministic restore test was added; 40/40 repeat runs pass) and a failing Gitleaks action (replaced with a pinned direct Gitleaks run; it finds no leaks locally).
 - **Google sign-in** is untested because it's switched off. It needs Google Cloud credentials set in Supabase.
 - **Real email delivery** is untested. Locally, mail goes to a test mailbox. Production needs Resend (or similar) set up in Supabase.
 - Images in the editor, links and comics pages are not built. Comics arrive in Phase 3.

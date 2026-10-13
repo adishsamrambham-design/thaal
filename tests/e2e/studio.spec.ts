@@ -86,11 +86,38 @@ test("unsaved text survives the tab closing and is restored next time", async ({
 
   const again = await context.newPage();
   await again.goto(url);
-  await expect(again.getByText("Unsaved changes from your last session")).toBeVisible();
+  // Either the local copy is restored, or (if the closing tab managed one last save) the server
+  // already has it. Both are fine; what must never happen is losing the text or a false warning.
   await expect(editorBox(again)).toHaveText("Saved part. Unsaved part.");
+  await expect(again.getByText("unsaved text from an older version")).toHaveCount(0);
   await expectSaved(again);
   await again.reload();
   await expect(editorBox(again)).toHaveText("Saved part. Unsaved part.");
+});
+
+test("a local copy left by a closed tab is restored and saved", async ({ page }) => {
+  await signIn(page, uniqueEmail("restore"));
+  const url = await createWork(page, "Restore test");
+  const chapterId = url.split("/").pop()!;
+  // Simulate a tab that closed before its text reached the server (chapter is still at version 1).
+  await page.evaluate((id) => {
+    localStorage.setItem(
+      `thaal:unsaved:${id}`,
+      JSON.stringify({
+        baseVersion: 1,
+        title: "Recovered title",
+        content: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Recovered text" }] }] },
+        at: new Date().toISOString(),
+      }),
+    );
+  }, chapterId);
+  await page.reload();
+  await expect(page.getByText("Unsaved changes from your last session")).toBeVisible();
+  await expect(editorBox(page)).toHaveText("Recovered text");
+  await expectSaved(page);
+  await page.reload();
+  await expect(page.getByLabel("Chapter title")).toHaveValue("Recovered title");
+  await expect(page.getByText("Unsaved changes from your last session")).toHaveCount(0);
 });
 
 test("two tabs editing the same chapter never silently overwrite each other", async ({ page, context }) => {

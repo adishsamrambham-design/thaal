@@ -79,3 +79,16 @@ describe("word count", () => {
     expect(countWords(docToText(doc!), "en")).toBe(3);
   });
 });
+
+describe("document comparison", () => {
+  it("treats documents as equal when only key order or stripped attributes differ", async () => {
+    const { sameDoc } = await import("./content");
+    const editor = {
+      type: "doc",
+      content: [{ type: "paragraph", attrs: { textAlign: null }, content: [{ type: "text", text: "hi" }] }],
+    };
+    const stored = { content: [{ content: [{ text: "hi", type: "text" }], type: "paragraph" }], type: "doc" };
+    expect(sameDoc(editor, stored)).toBe(true);
+    expect(sameDoc(editor, { type: "doc", content: [para("bye")] })).toBe(false);
+  });
+});

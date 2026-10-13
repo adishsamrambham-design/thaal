@@ -20,7 +20,7 @@ import {
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { countWords, docToText, sanitizeDoc, type Doc } from "@/lib/writing/content";
+import { countWords, docToText, sameDoc, sanitizeDoc, type Doc } from "@/lib/writing/content";
 import { clearBackup, readBackup } from "@/lib/writing/local-backup";
 import { cn } from "@/lib/utils";
 import { SaveIndicator } from "./save-indicator";
@@ -77,7 +77,8 @@ export function ChapterEditor({ chapter, work, partLabel }: Props) {
       const backup = readBackup(chapter.id);
       if (!backup) return;
       const content = sanitizeDoc(backup.content);
-      const same = JSON.stringify(backup.content) === JSON.stringify(chapter.content) && backup.title === chapter.title;
+      // Same text as the server (e.g. the save went through but the tab closed before clearing it).
+      const same = sameDoc(backup.content, chapter.content) && backup.title === chapter.title;
       if (!content || same) {
         clearBackup(chapter.id);
         return;
